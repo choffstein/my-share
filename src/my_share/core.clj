@@ -90,5 +90,5 @@
 		  :post (mp/wrap-multipart-params post-form)}
       ["fetch" handle] {:get (fn [req] (handle-request handle))}))
       
-(defn run []
+(defn -main [& args]
   (run-jetty #'main-routes {:port 8080 :join? false})) 

@@ -10,7 +10,8 @@
 	    [clojure.contrib.json :as json]
 	    [clojure.contrib.java-utils :as utils]
 	    [com.draines.postal.core :as mail])
-  (:import (java.util UUID)))
+  (:import (java.util UUID))
+  (:gen-class))
 
 (def domain "127.0.0.1:8080")
 (def upload-dir "files")

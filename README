@@ -1,13 +1,5 @@
-# my-share
+My cheap clojure version of sendbigfiles.com.
+Host it somewhere.  Build the jar.  Spin it up.  Use it.  
+Should probably put some username/password requirements on it -- but this is only for fun.
 
-FIXME: write description
-
-## Usage
-
-FIXME: write
-
-## License
-
-Copyright (C) 2010 FIXME
-
-Distributed under the Eclipse Public License, the same as Clojure.
+Copyright (C) 2011 Corey M. Hoffstein

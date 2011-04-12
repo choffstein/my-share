@@ -16,10 +16,10 @@
 	   (java.io.FileInputStream))
   (:gen-class))
 
-(def domain "127.0.0.1:8080")
-(def upload-dir "files")
-(def from-address "corey@hoffstein.com")
-(def mail-host "mail.hoffstein.com")
+(def domain "")
+(def upload-dir ".")
+(def from-address "")
+(def mail-host "")
 
 (defn- generate-uuid [] (.toString (UUID/randomUUID)))
 

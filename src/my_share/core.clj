@@ -19,6 +19,7 @@
 (def domain "127.0.0.1:8080")
 (def upload-dir "files")
 (def from-address "corey@hoffstein.com")
+(def mail-host "mail.hoffstein.com")
 
 (defn- generate-uuid [] (.toString (UUID/randomUUID)))
 
@@ -47,7 +48,7 @@
 	     (submit-button "Upload")]))
 
 (defn- email-body [uuid]
-  (str "Hey, I just uploaded a private file for you.  To retrieve it, please click " domain "/fetch/" uuid))
+  (str "Hey, I just uploaded a private file for you.  To retrieve it, please click " domain "/" uuid))
 
 (defn- post-form [request]
   (let [form-params (:multipart-params  request)
@@ -60,10 +61,12 @@
 	meta-file (ds/file-str (str upload-dir "/" uuid ".meta"))
 	out-file (ds/file-str (str upload-dir "/" uuid ".file"))
 	erase-on-download? (get form-params "erase-on-download?")
-	mail-status (mail/send-message {:from from-address
+	mail-status (mail/send-message #^{:host mail-host}
+				       {:from from-address
 					:to email-address
 					:subject "Private File Upload For You"
-					:body (email-body uuid)})]
+					:body (email-body uuid)})
+	_ (println mail-status)]
     (if (= (:code mail-status) 0)
       (do
 	(ds/spit meta-file (json/json-str {:filename file-name
@@ -94,7 +97,7 @@
      (app
       ["upload"] {:get (fn [req] (response (upload-form)))
 		  :post (mp/wrap-multipart-params post-form)}
-      ["fetch" handle] {:get (fn [req] (handle-request handle))}))
+      [_] {:get (fn [req] (handle-request (apply str (rest (:uri req)))))}))
       
 (defn -main [& args]
   (run-jetty #'main-routes {:port 8080 :join? false})) 

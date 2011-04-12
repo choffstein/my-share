@@ -7,10 +7,13 @@
   (:require [compojure.route :as route]
 	    [ring.middleware.multipart-params :as mp]
 	    [clojure.contrib.duck-streams :as ds]
+	    [clojure.contrib.io :as io]
 	    [clojure.contrib.json :as json]
 	    [clojure.contrib.java-utils :as utils]
 	    [com.draines.postal.core :as mail])
-  (:import (java.util UUID))
+  (:import (java.util UUID)
+	   (java.io.BufferedInputStream)
+	   (java.io.FileInputStream))
   (:gen-class))
 
 (def domain "127.0.0.1:8080")
@@ -53,6 +56,7 @@
 	uuid (generate-uuid)
 	content-type (:content-type file)
 	file-name (:filename file)
+	file-size (:size file)
 	meta-file (ds/file-str (str upload-dir "/" uuid ".meta"))
 	out-file (ds/file-str (str upload-dir "/" uuid ".file"))
 	erase-on-download? (get form-params "erase-on-download?")
@@ -64,6 +68,7 @@
       (do
 	(ds/spit meta-file (json/json-str {:filename file-name
 					   :content-type content-type
+					   :size file-size
 					   :erase-on-download? erase-on-download?}))
 	(ds/copy (:tempfile file) out-file)
 	(response (upload-form "File Upload Successful")))
@@ -73,7 +78,7 @@
   (let [in-file (ds/file-str (str upload-dir "/" handle ".file"))
 	meta-file (ds/file-str (str upload-dir "/" handle ".meta"))
 	meta-data (json/read-json (slurp meta-file))
-	file-data (slurp in-file)
+	buffered-input-stream (java.io.BufferedInputStream. (java.io.FileInputStream. in-file))
 	remove-file? (:erase-on-download? meta-data)]
     (do
       (when remove-file?
@@ -81,8 +86,8 @@
 	(utils/delete-file in-file))
       {:status 200
        :headers {"content-type" (:content-type meta-data)
-	       "content-disposition" (str "attachment; filename=" (:filename meta-data))}
-       :body file-data})))
+		 "content-disposition" (str "attachment; filename=" (:filename meta-data))}
+       :body buffered-input-stream})))
     
 
 (def main-routes
